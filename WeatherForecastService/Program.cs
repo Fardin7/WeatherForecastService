@@ -4,9 +4,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using WeatherForecastService.Client;
-using WeatherForecastService.Model;
 using WeatherForecastService.Dtos;
-
+using WeatherForecastService.Repository;
+using Domain.Interface;
+using DataAccess;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,22 +16,46 @@ builder.Services.Configure<JwtConfig>(builder.Configuration.GetSection("JwtConfi
 builder.Services.AddDbContext<ApiDbContext>(option =>
 option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnectionStrings")));
 
+builder.Services.AddScoped<ICurrentWeatherRepository, CurrentWeatherRepository>();
+builder.Services.AddScoped<IUserCurrentWeatherRepository, UserCurrentWeatherRepository>();
+builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
 
+//builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+//                .AddJwtBearer(options =>
+//                {
+//                    options.TokenValidationParameters = new TokenValidationParameters
+//                    {
+//                        ValidateIssuer = true,
+//                        ValidateAudience = true,
+//                        ValidateLifetime = true,
+//                        ValidateIssuerSigningKey = true,
+//                        ValidIssuer = builder.Configuration["JwtConfig:Issuer"],
+//                        ValidAudience = builder.Configuration["JwtConfig:Audience"],
+//                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtConfig:Key"]))
+//                    };
+//                });
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddJwtBearer(options =>
+builder.Services.AddAuthentication(options => {
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+            .AddJwtBearer(jwt => {
+                var key = Encoding.ASCII.GetBytes(builder.Configuration["JwtConfig:Key"]);
+
+                jwt.SaveToken = true;
+                jwt.TokenValidationParameters = new TokenValidationParameters
                 {
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        ValidateIssuer = true,
-                        ValidateAudience = true,
-                        ValidateLifetime = true,
-                        ValidateIssuerSigningKey = true,
-                        ValidIssuer = builder.Configuration["JwtConfig:Issuer"],
-                        ValidAudience = builder.Configuration["JwtConfig:Audience"],
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtConfig:Key"]))
-                    };
-                });
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ValidateLifetime = true,
+                    RequireExpirationTime = false
+                };
+            });
+
+
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
                     .AddEntityFrameworkStores<ApiDbContext>();
 

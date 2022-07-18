@@ -1,6 +1,7 @@
 ﻿using WeatherForecastService.Dtos;
-using System.Text;
 using System.Text.Json;
+using DataAccess;
+using Domain.Models;
 
 namespace WeatherForecastService.Client
 {
@@ -8,14 +9,19 @@ namespace WeatherForecastService.Client
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IConfiguration _configuration;
+        private readonly IUnitOfWork _unitOfWork;
         const int NumberOfThreeHours = 8;
 
-        public OpenWeathermapService(IHttpClientFactory httpClientFactory, IConfiguration configuration)
+        public OpenWeathermapService(IHttpClientFactory httpClientFactory, IConfiguration configuration
+          , IUnitOfWork unitOfWork)
         {
             _httpClientFactory = httpClientFactory;
             _configuration = configuration;
+            _unitOfWork = unitOfWork;
+
+
         }
-        public async Task<IEnumerable<Weather>> NextFiveDays(ForcastDto forcastDto)
+        public async Task<IEnumerable<ForcastReadDto>> NextFiveDays(ForcastDto forcastDto, string userid)
         {
             ForcastDataDto? forcast = null;
             using (HttpClient _httpClient = _httpClientFactory.CreateClient("ServicePlicy"))
@@ -28,13 +34,13 @@ namespace WeatherForecastService.Client
                 {
                     var streamedResult = await httpResponse.Content.ReadAsStreamAsync();
                     forcast = await JsonSerializer.DeserializeAsync<ForcastDataDto>(streamedResult);
-                    List<Weather> weathers = new List<Weather>();
+                    List<ForcastReadDto> weathers = new List<ForcastReadDto>();
                     var value = forcast.list;
 
                     while (value.Any())
                     {
-                       var day= value.Take(NumberOfThreeHours).ToList();
-                        weathers.Add(new Weather()
+                        var day = value.Take(NumberOfThreeHours).ToList();
+                        weathers.Add(new ForcastReadDto()
                         {
                             Humidity = day.Select(q => q.main.humidity).Average(),
                             Temperature = day.Select(q => q.main.temp).Average(),
@@ -42,6 +48,11 @@ namespace WeatherForecastService.Client
                         });
                         value = value.Skip(NumberOfThreeHours).ToList();
                     }
+                    var saved = await _unitOfWork.currentWeatherRepository.CreateAsync(new CurrentWeather() { Humidity = weathers[0].Humidity, Temperature = 1 });
+                    await _unitOfWork.CompleteAsync();
+
+                    await _unitOfWork.userCurrentWeatherRepository.Create(new UserCurrentWeather() { UserId = userid, CurrentWeatherId = saved.Id });
+                    int res = await _unitOfWork.CompleteAsync();
 
                     return weathers;
                 }

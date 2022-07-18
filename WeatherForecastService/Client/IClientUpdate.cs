@@ -4,6 +4,6 @@ namespace WeatherForecastService.Client
 {
     public interface IClientUpdate
     {
-        Task<IEnumerable<Weather>> NextFiveDays(ForcastDto forcastDto);
+        Task<IEnumerable<ForcastReadDto>> NextFiveDays(ForcastDto forcastDto,string userid);
     }
 }

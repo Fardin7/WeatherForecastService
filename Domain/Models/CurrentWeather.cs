@@ -1,4 +1,4 @@
-﻿namespace WeatherForecastService.Model
+﻿namespace Domain.Models
 {
     public class CurrentWeather
     {

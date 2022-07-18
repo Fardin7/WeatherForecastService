@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
-
-namespace WeatherForecastService.Model
+namespace Domain.Models
 {
     public class User:IdentityUser
     {

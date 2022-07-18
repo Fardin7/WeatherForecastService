@@ -1,11 +1,15 @@
 using WeatherForecastService.Client;
 using Microsoft.AspNetCore.Mvc;
 using WeatherForecastService.Dtos;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using System.Security.Claims;
 
 namespace WeatherForecastService.Controllers
 {
     [ApiController]
     [Route("api/Weather")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class WeatherForecastController : ControllerBase
     {
         private readonly ILogger<WeatherForecastController> _logger;
@@ -23,7 +27,7 @@ namespace WeatherForecastService.Controllers
             if (!ModelState.IsValid)
                 return BadRequest();
 
-            return Ok(await _clientUpdate.NextFiveDays(forcastDto));
+            return Ok(await _clientUpdate.NextFiveDays(forcastDto, "a29b36e7-b405-49a3-901e-58dbfd168a66"));
         }
     }
 }

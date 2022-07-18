@@ -5,12 +5,12 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using Domain.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using WeatherForecastService.Dtos;
-using WeatherForecastService.Model;
 
 namespace WeatherForecastService.Controllers
 {
@@ -48,7 +48,7 @@ namespace WeatherForecastService.Controllers
                     });
                 }
 
-                var newUser = new Model.User() { Email = user.Email, UserName = user.Username};
+                var newUser =new User() { Email = user.Email, UserName = user.Username};
                 var isCreated = await _userManager.CreateAsync(newUser, user.Password);
                 if(isCreated.Succeeded)
                 {
@@ -136,10 +136,10 @@ namespace WeatherForecastService.Controllers
                 Expires = DateTime.UtcNow.AddHours(6),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
-
+            
             var token = jwtTokenHandler.CreateToken(tokenDescriptor);
             var jwtToken = jwtTokenHandler.WriteToken(token);
-
+           
             return jwtToken;
         }
     }
