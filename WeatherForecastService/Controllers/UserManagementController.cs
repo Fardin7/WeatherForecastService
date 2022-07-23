@@ -1,120 +1,124 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
 using System.Text;
-using System.Threading.Tasks;
 using Domain.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using WeatherForecastService.Dtos;
+using WeatherForecastService.Dtos.User;
+using WeatherForecastService.Dtos.Config;
 
 namespace WeatherForecastService.Controllers
 {
-    [Route("api/[controller]")] // api/authManagement
+    [Route("api/[controller]")]
     [ApiController]
     public class UserManagementController : ControllerBase
     {
         private readonly UserManager<IdentityUser> _userManager;
         private readonly JwtConfig _jwtConfig;
-
         public UserManagementController(
             UserManager<IdentityUser> userManager,
-            IOptionsMonitor<JwtConfig> optionsMonitor)
+            IOptionsMonitor<JwtConfig> jwtConfigOptions)
         {
             _userManager = userManager;
-            _jwtConfig = optionsMonitor.CurrentValue;
+            _jwtConfig = jwtConfigOptions.CurrentValue;
         }
 
         [HttpPost]
         [Route("Register")]
-        public async Task<IActionResult> Register([FromBody] UserRegistrationDto user)
+        public async Task<IActionResult> Register([FromBody] UserCreateDto user)
         {
-            if(ModelState.IsValid)
+            if (ModelState.IsValid)
             {
-                // We can utilise the model
                 var existingUser = await _userManager.FindByEmailAsync(user.Email);
 
-                if(existingUser != null)
+                if (existingUser != null)
                 {
-                    return BadRequest(new RegistrationResponse(){
-                            Errors = new List<string>() {
+                    return BadRequest(new RequestValidationDto()
+                    {
+                        Errors = new List<string>() {
                                 "Email already in use"
                             },
-                            Success = false
+                        Success = false
                     });
                 }
 
-                var newUser =new User() { Email = user.Email, UserName = user.Username};
+                var newUser = new User() { Email = user.Email, UserName = user.Username };
                 var isCreated = await _userManager.CreateAsync(newUser, user.Password);
-                if(isCreated.Succeeded)
+                if (isCreated.Succeeded)
                 {
-                   var jwtToken =  GenerateJwtToken( newUser);
+                    var jwtToken = GenerateJwtToken(newUser);
 
-                   return Ok(new RegistrationResponse() {
-                       Success = true,
-                       Token = jwtToken
-                   });
-                } else {
-                    return BadRequest(new RegistrationResponse(){
-                            Errors = isCreated.Errors.Select(x => x.Description).ToList(),
-                            Success = false
+                    return Ok(new RequestValidationDto()
+                    {
+                        Success = true,
+                        Token = jwtToken
+                    });
+                }
+                else
+                {
+                    return BadRequest(new RequestValidationDto()
+                    {
+                        Errors = isCreated.Errors.Select(x => x.Description).ToList(),
+                        Success = false
                     });
                 }
             }
 
-            return BadRequest(new RegistrationResponse(){
-                    Errors = new List<string>() {
-                        "Invalid payload"
-                    },
-                    Success = false
+            return BadRequest(new RequestValidationDto()
+            {
+                Errors = ModelState.Select(q => q.Key).ToList(),
+                Success = false
             });
         }
 
         [HttpPost]
         [Route("Login")]
-        public async Task<IActionResult> Login([FromBody] UserLoginRequest user)
+        public async Task<IActionResult> Login([FromBody] UserLoginDto user)
         {
-            if(ModelState.IsValid)
+            if (ModelState.IsValid)
             {
                 var existingUser = await _userManager.FindByEmailAsync(user.Email);
 
-                if(existingUser == null) {
-                        return BadRequest(new RegistrationResponse(){
-                            Errors = new List<string>() {
+                if (existingUser == null)
+                {
+                    return BadRequest(new RequestValidationDto()
+                    {
+                        Errors = new List<string>() {
                                 "Invalid login request"
                             },
-                            Success = false
+                        Success = false
                     });
                 }
 
                 var isCorrect = await _userManager.CheckPasswordAsync(existingUser, user.Password);
 
-                if(!isCorrect) {
-                      return BadRequest(new RegistrationResponse(){
-                            Errors = new List<string>() {
+                if (!isCorrect)
+                {
+                    return BadRequest(new RequestValidationDto()
+                    {
+                        Errors = new List<string>() {
                                 "Invalid login request"
                             },
-                            Success = false
+                        Success = false
                     });
                 }
 
-                var jwtToken  =GenerateJwtToken(existingUser);
+                var jwtToken = GenerateJwtToken(existingUser);
 
-                return Ok(new RegistrationResponse() {
+                return Ok(new RequestValidationDto()
+                {
                     Success = true,
                     Token = jwtToken
                 });
             }
 
-            return BadRequest(new RegistrationResponse(){
-                    Errors = new List<string>() {
-                        "Invalid payload"
-                    },
-                    Success = false
+            return BadRequest(new RequestValidationDto()
+            {
+                Errors = ModelState.Select(q => q.Key).ToList(),
+                Success = false
             });
         }
 
@@ -126,20 +130,20 @@ namespace WeatherForecastService.Controllers
 
             var tokenDescriptor = new SecurityTokenDescriptor
             {
-                Subject = new ClaimsIdentity(new []
+                Subject = new ClaimsIdentity(new[]
                 {
-                    new Claim("Id", user.Id), 
+                    new Claim("Id", user.Id),
                     new Claim(JwtRegisteredClaimNames.Email, user.Email),
                     new Claim(JwtRegisteredClaimNames.Sub, user.Email),
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
                 }),
-                Expires = DateTime.UtcNow.AddHours(6),
+                Expires = DateTime.UtcNow.AddDays(6),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
-            
+
             var token = jwtTokenHandler.CreateToken(tokenDescriptor);
             var jwtToken = jwtTokenHandler.WriteToken(token);
-           
+
             return jwtToken;
         }
     }

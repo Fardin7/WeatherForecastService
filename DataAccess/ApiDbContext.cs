@@ -10,13 +10,9 @@ namespace DataAccess
         {
 
         }
-
         public DbSet<User> User { get; set; }
-
         public DbSet<CurrentWeather> currentWeather { get; set; }
-
         public DbSet<UserCurrentWeather> userCurrentWeather { get; set; }
-
         protected override void OnModelCreating(ModelBuilder builder)
         {
             builder.Entity<UserCurrentWeather>()

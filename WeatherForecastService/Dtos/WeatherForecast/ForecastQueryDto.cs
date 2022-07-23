@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace WeatherForecastService.Dtos
+namespace WeatherForecastService.Dtos.WeatherForecast
 {
-    public class ForcastDto
+    public class ForecastQueryDto
     {
         [Required]
         public string City { get; set; }

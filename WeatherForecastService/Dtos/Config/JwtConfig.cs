@@ -1,4 +1,4 @@
-﻿namespace WeatherForecastService.Dtos
+﻿namespace WeatherForecastService.Dtos.Config
 {
     public class JwtConfig
     {

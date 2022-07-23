@@ -1,12 +1,13 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace WeatherForecastService.Dtos
+namespace WeatherForecastService.Dtos.User
 {
-    public class UserLoginRequest
+    public class UserLoginDto
     {
         [Required]
         [EmailAddress]
         public string Email { get; set; }
+
         [Required]
         public string Password { get; set; }
     }

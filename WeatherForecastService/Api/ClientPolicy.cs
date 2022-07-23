@@ -4,7 +4,7 @@ using Polly.Extensions.Http;
 using Polly.Retry;
 using Polly.Timeout;
 
-namespace WeatherForecastService.Client
+namespace WeatherForecastService.Api
 {
     public class ClientPolicy
     {

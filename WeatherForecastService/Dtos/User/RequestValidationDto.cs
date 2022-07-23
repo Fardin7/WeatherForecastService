@@ -1,6 +1,6 @@
-﻿namespace WeatherForecastService.Dtos
+﻿namespace WeatherForecastService.Dtos.User
 {
-    public class RegistrationResponse
+    public class RequestValidationDto
     {
         public string Token { get; set; }
         public bool Success { get; set; }

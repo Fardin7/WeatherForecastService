@@ -1,9 +1,10 @@
-using WeatherForecastService.Client;
+using WeatherForecastService.Api;
 using Microsoft.AspNetCore.Mvc;
-using WeatherForecastService.Dtos;
+using WeatherForecastService.Dtos.WeatherForecast;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Security.Claims;
+using Domain.Interface;
 
 namespace WeatherForecastService.Controllers
 {
@@ -13,21 +14,44 @@ namespace WeatherForecastService.Controllers
     public class WeatherForecastController : ControllerBase
     {
         private readonly ILogger<WeatherForecastController> _logger;
-        private readonly IClientUpdate _clientUpdate;
+        private readonly IWeatherForecastApi _clientUpdate;
+        private readonly IUserCurrentWeatherRepository _userCurrentWeatherRepository;
 
-        public WeatherForecastController(ILogger<WeatherForecastController> logger, IClientUpdate clientUpdate)
+        public WeatherForecastController(ILogger<WeatherForecastController> logger, 
+            IWeatherForecastApi clientUpdate,
+            IUserCurrentWeatherRepository userCurrentWeatherRepository)
         {
             _logger = logger;
             _clientUpdate = clientUpdate;
+            _userCurrentWeatherRepository = userCurrentWeatherRepository;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> Get([FromQuery] ForcastDto forcastDto)
+        [HttpGet("GetNextFiveDays")]
+        public async Task<IActionResult> GetNextFiveDays([FromQuery] ForecastQueryDto forcastDto)
         {
             if (!ModelState.IsValid)
                 return BadRequest();
 
-            return Ok(await _clientUpdate.NextFiveDays(forcastDto, "a29b36e7-b405-49a3-901e-58dbfd168a66"));
+            return Ok(await _clientUpdate.NextFiveDays(forcastDto));
+        }
+
+        [HttpGet("GetCuurent")]
+        public async Task<IActionResult> GetCuurent([FromQuery] ForecastQueryDto forcastDto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest();
+
+            var currentForecast = await _clientUpdate.Current(forcastDto, User.FindFirstValue("Id"));
+
+            return Ok(currentForecast);
+        }
+
+        [HttpGet("GetUserCuurentWeather")]
+        public async Task<IActionResult> GetUserCuurentWeather()
+        {
+            var lastForecasts = await _userCurrentWeatherRepository.GetCurrentWeatherNyUserid(User.FindFirstValue("Id"));
+
+            return Ok(lastForecasts);
         }
     }
-}
+}  
