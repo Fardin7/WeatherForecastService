@@ -11,6 +11,8 @@ using WeatherForecastService.Dtos.Config;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var client= builder.Configuration["JwtConfig:Audience"];
+
 builder.Services.AddCors(
     options => options.
     AddPolicy("CorsPolicy",
@@ -18,7 +20,7 @@ builder.Services.AddCors(
     .AllowAnyHeader()
     .AllowAnyMethod()
     .AllowAnyOrigin()
-    .WithOrigins("http://localhost:8080")
+    .WithOrigins(client)
     .AllowCredentials()));
 
 builder.Services.Configure<JwtConfig>(builder.Configuration.GetSection("JwtConfig"));
@@ -52,10 +54,12 @@ builder.Services.AddAuthentication(options => {
                 {
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(key),
-                    ValidateIssuer = false,
-                    ValidateAudience = false,
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
                     ValidateLifetime = true,
-                    RequireExpirationTime = false
+                    RequireExpirationTime = true,
+                    ValidIssuer= builder.Configuration["JwtConfig:Issuer"],
+                    ValidAudience= builder.Configuration["JwtConfig:Audience"]
                 };
             });
 

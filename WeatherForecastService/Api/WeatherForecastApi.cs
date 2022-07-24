@@ -20,7 +20,7 @@ namespace WeatherForecastService.Api
         private readonly ApiConfig _apiConfig;
         public WeatherForecastApi(IHttpClientFactory httpClientFactory, IMapper mapper,
                                   ICurrentWeatherRepository currentWeatherRepository,
-                                  IUserCurrentWeatherRepository userCurrentWeatherRepository, 
+                                  IUserCurrentWeatherRepository userCurrentWeatherRepository,
                                   IOptionsMonitor<ApiConfig> apiConfigOptions)
         {
             _currentWeatherRepository = currentWeatherRepository;
@@ -32,13 +32,15 @@ namespace WeatherForecastService.Api
         public async Task<IEnumerable<ForecastReadDto>> NextFiveDays(ForecastQueryDto forcastDto)
         {
             IEnumerable<ForecastReadDto>? result = null;
+
             using (HttpClient _httpClient = _httpClientFactory.CreateClient("ServicePlicy"))
             {
-                var httpResponse = await _httpClient.
-                     GetAsync($"{_apiConfig.NextFiveDaysAPILink}{forcastDto.City}" +
-                     $"&appid={_apiConfig.APIKey}&units={_apiConfig.TemperatureUnit}");
+                var httpResponse = await _httpClient
+                                         .GetAsync($"{_apiConfig.NextFiveDaysAPILink}{forcastDto.City}" +
+                                          $"&appid={_apiConfig.APIKey}&units={_apiConfig.TemperatureUnit}");
 
                 httpResponse.EnsureSuccessStatusCode();
+
                 try
                 {
                     var streamedResult = await httpResponse.Content.ReadAsStreamAsync();
@@ -48,7 +50,7 @@ namespace WeatherForecastService.Api
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("Invalid JSON.");
+                    Console.WriteLine(ex.Message);
                 }
             }
             return result;
@@ -59,9 +61,9 @@ namespace WeatherForecastService.Api
 
             using (HttpClient _httpClient = _httpClientFactory.CreateClient("ServicePlicy"))
             {
-                var httpResponse = await _httpClient.
-                                   GetAsync($"{_apiConfig.CurrentAPILink}{forcastDto.City}&appid={_apiConfig.APIKey}" +
-                                   $"&units={_apiConfig.TemperatureUnit}");
+                var httpResponse = await _httpClient
+                                         .GetAsync($"{_apiConfig.CurrentAPILink}{forcastDto.City}" +
+                                          $"&appid={_apiConfig.APIKey}&units={_apiConfig.TemperatureUnit}");
 
                 httpResponse.EnsureSuccessStatusCode();
                 try
@@ -73,9 +75,9 @@ namespace WeatherForecastService.Api
 
                     await InsertUserCurrentWeatherForecast(result, userid);
                 }
-                catch (Exception EX)
+                catch (Exception ex)
                 {
-                    Console.WriteLine("Invalid JSON.");
+                    Console.WriteLine(ex.Message);
                 }
             }
             return result;

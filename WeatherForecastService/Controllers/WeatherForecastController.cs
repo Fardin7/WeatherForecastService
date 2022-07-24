@@ -41,7 +41,7 @@ namespace WeatherForecastService.Controllers
             if (!ModelState.IsValid)
                 return BadRequest();
 
-            var currentForecast = await _clientUpdate.Current(forcastDto, User.FindFirstValue("Id"));
+            var currentForecast = await _clientUpdate.Current(forcastDto, GetUserId());
 
             return Ok(currentForecast);
         }
@@ -49,9 +49,15 @@ namespace WeatherForecastService.Controllers
         [HttpGet("GetUserCuurentWeather")]
         public async Task<IActionResult> GetUserCuurentWeather()
         {
-            var lastForecasts = await _userCurrentWeatherRepository.GetCurrentWeatherNyUserid(User.FindFirstValue("Id"));
+            var lastForecasts = await _userCurrentWeatherRepository.GetCurrentWeatherNyUserid(GetUserId());
 
             return Ok(lastForecasts);
+        }
+
+        [NonAction]
+        public string GetUserId()
+        {
+            return User.FindFirstValue("UserId");
         }
     }
 }  

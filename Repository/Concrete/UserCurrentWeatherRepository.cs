@@ -11,7 +11,7 @@ namespace WeatherForecastService.Repository
         private readonly ApiDbContext _apiDbContext;
         private readonly IConfiguration _configuration;
 
-        public UserCurrentWeatherRepository(ApiDbContext apiDbContext,IConfiguration configuration)
+        public UserCurrentWeatherRepository(ApiDbContext apiDbContext, IConfiguration configuration)
         {
             _apiDbContext = apiDbContext;
             _configuration = configuration;
@@ -23,10 +23,13 @@ namespace WeatherForecastService.Repository
         }
         public async Task<IEnumerable<CurrentWeather>> GetCurrentWeatherNyUserid(string userid)
         {
-          return  await _apiDbContext.userCurrentWeather
-                        .Where(q => q.UserId == userid)
-                        .Select(q => q.currentWeather).Take(8)
-                        .OrderByDescending(q=>q.Id).ToListAsync();
+            var ListCount = Convert.ToInt32(_configuration.GetSection("HistoryListCount").Value);
+
+            return await _apiDbContext.userCurrentWeather
+                          .Where(q => q.UserId == userid)
+                          .Select(q => q.currentWeather).Take(ListCount)
+                          .OrderByDescending(q => q.Id).ToListAsync();
         }
     }
 }
+  

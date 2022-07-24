@@ -39,9 +39,9 @@ namespace WeatherForecastService.Controllers
                     return BadRequest(new RequestValidationDto()
                     {
                         Errors = new List<string>() {
-                                "Email already in use"
+                                "The account already exists."
                             },
-                        Success = false
+                        IsSuccess= false
                     });
                 }
 
@@ -49,11 +49,11 @@ namespace WeatherForecastService.Controllers
                 var isCreated = await _userManager.CreateAsync(newUser, user.Password);
                 if (isCreated.Succeeded)
                 {
-                    var jwtToken = GenerateJwtToken(newUser);
+                    var jwtToken = GenerateToken(newUser);                  
 
                     return Ok(new RequestValidationDto()
                     {
-                        Success = true,
+                        IsSuccess = true,
                         Token = jwtToken
                     });
                 }
@@ -62,7 +62,7 @@ namespace WeatherForecastService.Controllers
                     return BadRequest(new RequestValidationDto()
                     {
                         Errors = isCreated.Errors.Select(x => x.Description).ToList(),
-                        Success = false
+                        IsSuccess = false
                     });
                 }
             }
@@ -70,7 +70,7 @@ namespace WeatherForecastService.Controllers
             return BadRequest(new RequestValidationDto()
             {
                 Errors = ModelState.Select(q => q.Key).ToList(),
-                Success = false
+                IsSuccess = false
             });
         }
 
@@ -87,9 +87,9 @@ namespace WeatherForecastService.Controllers
                     return BadRequest(new RequestValidationDto()
                     {
                         Errors = new List<string>() {
-                                "Invalid login request"
+                                "A user with this email does not exist."
                             },
-                        Success = false
+                        IsSuccess = false
                     });
                 }
 
@@ -100,17 +100,17 @@ namespace WeatherForecastService.Controllers
                     return BadRequest(new RequestValidationDto()
                     {
                         Errors = new List<string>() {
-                                "Invalid login request"
+                                "Password is incorrect."
                             },
-                        Success = false
+                        IsSuccess = false
                     });
                 }
 
-                var jwtToken = GenerateJwtToken(existingUser);
+                var jwtToken = GenerateToken(existingUser);
 
                 return Ok(new RequestValidationDto()
                 {
-                    Success = true,
+                    IsSuccess = true,
                     Token = jwtToken
                 });
             }
@@ -118,27 +118,29 @@ namespace WeatherForecastService.Controllers
             return BadRequest(new RequestValidationDto()
             {
                 Errors = ModelState.Select(q => q.Key).ToList(),
-                Success = false
+                IsSuccess = false
             });
         }
-
-        private string GenerateJwtToken(IdentityUser user)
+        private string GenerateToken(IdentityUser user)
         {
             var jwtTokenHandler = new JwtSecurityTokenHandler();
 
             var key = Encoding.ASCII.GetBytes(_jwtConfig.Key);
+            var signingCredential = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature);
 
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new[]
                 {
-                    new Claim("Id", user.Id),
+                    new Claim("UserId", user.Id),
                     new Claim(JwtRegisteredClaimNames.Email, user.Email),
                     new Claim(JwtRegisteredClaimNames.Sub, user.Email),
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
                 }),
-                Expires = DateTime.UtcNow.AddDays(6),
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+                Expires = DateTime.UtcNow.AddDays(Convert.ToInt32(_jwtConfig.ExpirationDays)),
+                SigningCredentials = signingCredential,
+                Issuer=_jwtConfig.Issuer,
+                Audience=_jwtConfig.Audience
             };
 
             var token = jwtTokenHandler.CreateToken(tokenDescriptor);
