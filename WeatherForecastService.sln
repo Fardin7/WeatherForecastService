@@ -9,7 +9,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Repository", "Repository\Re
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataAccess", "DataAccess\DataAccess.csproj", "{C9F89028-5702-4171-A8F2-CBE9B61E136C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain", "Domain\Domain.csproj", "{6E098E32-D2EC-4C6B-BC66-E746EAF68809}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Domain", "Domain\Domain.csproj", "{6E098E32-D2EC-4C6B-BC66-E746EAF68809}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WeatherForecastUnitTest", "WeatherForecastUnitTest\WeatherForecastUnitTest.csproj", "{146A17D2-319D-4354-95F2-93D0D28507C4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WeatherForecastIntegrationTest", "WeatherForecastIntegrationTest\WeatherForecastIntegrationTest.csproj", "{FCF1977F-BB55-43BC-AD50-CE480D1E04D7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +37,14 @@ Global
 		{6E098E32-D2EC-4C6B-BC66-E746EAF68809}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6E098E32-D2EC-4C6B-BC66-E746EAF68809}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6E098E32-D2EC-4C6B-BC66-E746EAF68809}.Release|Any CPU.Build.0 = Release|Any CPU
+		{146A17D2-319D-4354-95F2-93D0D28507C4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{146A17D2-319D-4354-95F2-93D0D28507C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{146A17D2-319D-4354-95F2-93D0D28507C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{146A17D2-319D-4354-95F2-93D0D28507C4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FCF1977F-BB55-43BC-AD50-CE480D1E04D7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FCF1977F-BB55-43BC-AD50-CE480D1E04D7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FCF1977F-BB55-43BC-AD50-CE480D1E04D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FCF1977F-BB55-43BC-AD50-CE480D1E04D7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

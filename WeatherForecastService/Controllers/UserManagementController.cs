@@ -28,7 +28,7 @@ namespace WeatherForecastService.Controllers
 
         [HttpPost]
         [Route("Register")]
-        public async Task<IActionResult> Register([FromBody] UserCreateDto user)
+        public async Task<ActionResult<RequestValidationDto>> Register([FromBody] UserCreateDto user)
         {
             if (ModelState.IsValid)
             {

@@ -77,8 +77,9 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
-    var context = services.GetRequiredService<ApiDbContext>();
-    context.Database.Migrate();
+    var appContext = services.GetRequiredService<ApiDbContext>();
+    if (appContext.Database.ProviderName != "Microsoft.EntityFrameworkCore.InMemory")
+        appContext.Database.Migrate();
 }
 
 if (app.Environment.IsDevelopment())
@@ -95,3 +96,5 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+public partial class Program { }
